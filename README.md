@@ -1,36 +1,105 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AgenticRAG
 
-## Getting Started
+An agentic Retrieval-Augmented Generation (RAG) system built on **Next.js 16**, using **LangChain**, open-source LLMs, and **Qdrant** as the vector database.
 
-First, run the development server:
+Upload documents, ask questions, and get grounded answers with citations — powered entirely by open-source models.
+
+---
+
+## What it does
+
+- **Document ingestion** — Upload PDF, DOCX, TXT, or Markdown files. They're parsed, chunked, embedded, and stored in Qdrant.
+- **Agentic reasoning** — A LangChain ReAct agent reasons across multiple retrieval steps, rewrites queries when needed, and synthesizes answers from multiple document sections.
+- **Streaming chat UI** — Responses stream token-by-token via SSE. Citations are expandable inline.
+- **Open-source stack** — No proprietary model lock-in. Swap LLM providers or embedding models via environment variables.
+
+---
+
+## Tech stack
+
+| Layer | Choice |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Agent orchestration | LangChain.js |
+| LLM (default) | Mistral-7B-Instruct via Together AI |
+| Vector database | Qdrant (self-hosted or cloud) |
+| Embedding model | BAAI/bge-small-en-v1.5 via Hugging Face |
+| Streaming | Server-Sent Events (SSE) |
+| Logging | pino (structured JSON) |
+
+---
+
+## Quick start
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Set up environment variables
+
+```bash
+cp .env.example .env.local
+```
+
+Fill in `.env.local` — at minimum you need:
+
+```
+QDRANT_URL=http://localhost:6333
+TOGETHER_API_KEY=your-together-api-key
+HF_API_KEY=hf_your-huggingface-token
+```
+
+### 3. Start Qdrant
+
+```bash
+docker run -d --name qdrant -p 6333:6333 qdrant/qdrant
+```
+
+### 4. Run the dev server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Switching providers
 
-## Learn More
+All provider config is environment-variable driven — no code changes needed.
 
-To learn more about Next.js, take a look at the following resources:
+**Use Ollama (fully local):**
+```
+LLM_PROVIDER=ollama
+LLM_MODEL=mistral
+EMBEDDING_PROVIDER=ollama
+EMBEDDING_MODEL=bge-small-en
+OLLAMA_BASE_URL=http://localhost:11434
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+**Use Hugging Face for LLM:**
+```
+LLM_PROVIDER=huggingface
+LLM_MODEL=mistralai/Mistral-7B-Instruct-v0.2
+HF_API_KEY=hf_...
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## Documentation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- [Architecture](docs/architecture.md) — system design, component diagrams, data models
+- [Dev Guide](docs/dev-guide.md) — step-by-step setup and development walkthrough (no AI needed)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## Running tests
+
+```bash
+npm test
+```
+
+Property-based tests use [fast-check](https://fast-check.dev) with a minimum of 100 iterations each.
