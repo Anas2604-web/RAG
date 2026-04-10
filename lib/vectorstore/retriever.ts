@@ -1,5 +1,5 @@
 import { qdrantClient, VectorStoreError } from "./qdrant-client";
-import { createEmbedder } from "@/lib/embeddings/embedder";
+import { createEmbeddingService } from "@/lib/embeddings/embedder";
 import { logger } from "@/lib/logger/logger";
 import { config } from "@/lib/config/env";
 import type { DocumentChunk, MetaDataFilter } from "@/types/index";
@@ -14,7 +14,7 @@ export async function retrieve(
 
   try {
     // Embed the query
-    const embedder = createEmbedder();
+    const embedder = createEmbeddingService();
     const queryVector = await embedder.embedQuery(query);
 
     // Search Qdrant
