@@ -6,3 +6,18 @@ export interface ReActStep{
 }
 
 export type ReActTrace = ReActStep[]
+
+export interface DocumentChunk {
+    id: string,
+    documentId: string,
+    filename: string,
+    collection: string,
+    chunkIndex: number,
+    text: string,
+    tokenCount: number,
+    metadata: Record<string, unknown>
+}
+
+export interface MetaDataFilter{
+    [key: string]: unknown
+}
