@@ -21,3 +21,13 @@ export interface DocumentChunk {
 export interface MetaDataFilter{
     [key: string]: unknown
 }
+
+export interface DocumentMetaData{
+    id: string, 
+    filename: string,
+    mimeType: string,
+    uploadedAt: string,
+    chunkCount: number,
+    collection: string,
+    sizeBytes: number
+}
