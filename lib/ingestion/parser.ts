@@ -2,8 +2,6 @@ const pdfParse = require("pdf-parse");
 import mammoth from "mammoth";
 import { logger } from "@/lib/logger/logger";
 
-const data = await pdfParse(Buffer);
-
 export class UnsupportedFormatError extends Error {
   constructor(filename: string) {
     super(`Unsupported file type: ${filename}. Supported: pdf, txt, md, docx`);

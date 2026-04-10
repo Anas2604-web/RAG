@@ -148,17 +148,17 @@
   - Use LangChain's `RecursiveCharacterTextSplitter`
   - Return array of chunk strings
 
-- [ ] 7.3 Create `lib/ingestion/pipeline.ts`
+- [x] 7.3 Create `lib/ingestion/pipeline.ts`
   - Implement `ingest(buffer: Buffer, filename: string, mimeType: string, collection?: string): Promise<DocumentMetadata>`
   - Orchestrate: validate → parse → split → embed → dimension-check → upsert to Qdrant → save to DocStore
   - Implement atomicity: if Qdrant upsert succeeds but DocStore write fails, issue compensating Qdrant delete
   - Log ingestion start/end at INFO level; log each step at DEBUG level
 
-- [ ] 7.4 Write unit tests for `parser.ts`
+- [x] 7.4 Write unit tests for `parser.ts`
   - One test per supported file type using small fixture files in `__tests__/fixtures/`
   - One test for unsupported extension returning `UnsupportedFormatError`
 
-- [ ] 7.5 Write property tests for `splitter.ts` and `pipeline.ts`
+- [x] 7.5 Write property tests for `splitter.ts` and `pipeline.ts`
   - `// Feature: agentic-rag, Property 1: Chunk size invariant`
   - `// Feature: agentic-rag, Property 3: Ingestion round-trip`
   - `// Feature: agentic-rag, Property 4: Embedding service failure prevents partial writes`
