@@ -5,4 +5,4 @@ export interface ReActStep{
     observation: string
 }
 
-export type ReActTrace = ReActStep[];
+export type ReActTrace = ReActStep[]
