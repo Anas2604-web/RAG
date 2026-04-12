@@ -1,0 +1,9 @@
+React is a popular open-source JavaScript library developed by Meta (formerly Facebook) for building user interfaces, particularly for single-page applications. 
+
+Key Concepts of React:
+1. Components: The building blocks of a React application. They are independent and reusable pieces of UI.
+2. Virtual DOM: React uses a virtual representation of the real DOM to optimize updates, making applications faster.
+3. JSX (JavaScript XML): A syntax extension that allows developers to write HTML-like code directly within JavaScript.
+4. State and Props: 'State' is data managed within a component, while 'Props' (properties) are data passed from a parent component to a child.
+
+React is widely used because it allows developers to create large web applications that can change data, without reloading the page.

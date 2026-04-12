@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import * as fc from "fast-check"
-import { formatTrace } from "@/lib/agent/pretty-printer";
+import { formatTrace } from "@/lib/agents/pretty-printer";
 import { trace } from "console";
 
 describe("formatTrace", () => {

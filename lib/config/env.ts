@@ -3,7 +3,7 @@ import { z } from "zod";
 const envSchema = z
   .object({
     // LLM Configuration
-    LLM_PROVIDER: z.enum(["together", "huggingface", "ollama"]).default("huggingface"),
+    LLM_PROVIDER: z.enum(["together", "huggingface", "ollama", "openai"]).default("huggingface"),
     LLM_MODEL: z.string().default("mistralai/Mistral-7B-Instruct-v0.2"),
     TOGETHER_API_KEY: z.string().optional(),
     HF_API_KEY: z.string(),
