@@ -7,5 +7,14 @@
     "chunkCount": 2,
     "collection": "agentic_rag",
     "sizeBytes": 815
+  },
+  {
+    "id": "77f1c442-3173-4ec9-b6dd-c6b7997c6086",
+    "filename": "backend-guide.txt",
+    "mimeType": "text/plain",
+    "uploadedAt": "2026-04-13T18:02:36.726Z",
+    "chunkCount": 1,
+    "collection": "agentic_rag",
+    "sizeBytes": 198
   }
 ]

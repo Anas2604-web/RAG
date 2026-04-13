@@ -1,10 +1,9 @@
-const pdfParse = require("pdf-parse");
 import mammoth from "mammoth";
 import { logger } from "@/lib/logger/logger";
 
 export class UnsupportedFormatError extends Error {
   constructor(filename: string) {
-    super(`Unsupported file type: ${filename}. Supported: pdf, txt, md, docx`);
+    super(`Unsupported file type: ${filename}. Supported: txt, md, docx`);
     this.name = "UnsupportedFormatError";
   }
 }
@@ -18,10 +17,7 @@ export async function parseFile(
   try {
     let text: string;
 
-    if (ext === "pdf") {
-      const data = await pdfParse(buffer);
-      text = data.text;
-    } else if (ext === "docx") {
+    if (ext === "docx") {
       const result = await mammoth.extractRawText({ buffer });
       text = result.value;
     } else if (ext === "txt" || ext === "md") {
@@ -39,22 +35,13 @@ export async function parseFile(
 
     return text;
   } catch (error) {
-    if (error instanceof UnsupportedFormatError) {
-      throw error;
-    }
+    logger.error({
+      event: "parser.error",
+      filename,
+      format: ext,
+      error: error instanceof Error ? error.message : String(error),
+    });
 
-    logger.error(
-      {
-        event: "parser.error",
-        filename,
-        format: ext,
-        error: error instanceof Error ? error.message : String(error),
-      },
-      "Failed to parse file"
-    );
-
-    throw new Error(
-      `Failed to parse ${filename}: ${error instanceof Error ? error.message : String(error)}`
-    );
+    throw error;
   }
 }
