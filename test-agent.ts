@@ -30,35 +30,39 @@ async function run() {
 
   console.log("⚠️ Agent not supported → using fallback RAG\n");
 
-  const context = await retrieverTool.invoke({ query });
+  const toolRaw = await retrieverTool.invoke({ query });
 
-  console.log("📦 Retrieved Context:\n", context);
+  const { context, sources } = JSON.parse(toolRaw as string);
+
+  console.log("📦 Context:\n", context);
+  console.log("📚 Sources:\n", sources);
 
   const final = await llm.invoke([
   {
     role: "system",
     content: `
-    You are a helpful teacher.
+      You are a helpful teacher.
 
-    Use ONLY the provided context to answer the question.
+      Use ONLY the provided context.
 
-    Rules:
-    - Explain in simple, clear language
-    - Do NOT return JSON
-    - Give a proper explanation (3-5 lines)
-    - If context is available, use it fully
+      Rules:
+      - Explain clearly in simple words
+      - Give 3-5 lines explanation
+      - Do NOT return JSON
+      - Do NOT add any sources
+      `,
+      },
+      {
+        role: "user",
+        content: `Context:\n${context}\n\nQuestion:\n${query}`,
+      },
+    ]);
 
-    Answer like you are teaching a beginner.
-    `,
-  },
-  {
-    role: "user",
-    content: `Context:\n${context}\n\nQuestion:\n${query}`,
-  },
-]);
-
-  console.log("\n🔥 FINAL ANSWER (Fallback RAG):\n");
+  console.log("\n🔥 FINAL ANSWER:\n");
   console.log(final.content);
+
+  console.log("\n📚 Sources:");
+  sources.forEach((s: string) => console.log(`- ${s}`));
 }
 
 run();
