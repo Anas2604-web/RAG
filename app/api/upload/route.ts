@@ -3,6 +3,10 @@ import { auth } from "@/auth";
 import { ingest } from "@/lib/ingestion/pipeline";
 import { connectDB } from "@/lib/db/mongoose";
 import ChatSession from "@/lib/db/models/ChatSession";
+import { IngestionError, FileSizeError } from "@/lib/ingestion/errors";
+
+// Maximum file size: 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,6 +21,19 @@ export async function POST(req: NextRequest) {
 
     if (!file) {
       return NextResponse.json({ error: "File is required" }, { status: 400 });
+    }
+
+    // Check file size
+    if (file.size > MAX_FILE_SIZE) {
+      const error = new FileSizeError(file.size, MAX_FILE_SIZE);
+      return NextResponse.json(
+        {
+          error: error.userMessage,
+          suggestions: error.suggestions,
+          errorCode: error.errorCode,
+        },
+        { status: 400 }
+      );
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -50,6 +67,31 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("UPLOAD ERROR:", error);
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+
+    // Handle IngestionError with detailed user feedback
+    if (error instanceof IngestionError) {
+      return NextResponse.json(
+        {
+          error: error.userMessage,
+          suggestions: error.suggestions,
+          errorCode: error.errorCode,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Handle unknown errors
+    return NextResponse.json(
+      {
+        error: "An unexpected error occurred while processing your file.",
+        suggestions: [
+          "Please try uploading the file again",
+          "If the problem persists, try a different file format",
+          "Contact support if you continue to experience issues",
+        ],
+        errorCode: "UNKNOWN_ERROR",
+      },
+      { status: 500 }
+    );
   }
 }

@@ -1,10 +1,10 @@
 import * as dotenv from "dotenv";
 
 dotenv.config({ path: ".env.local" });
-import { createEmbedder } from "./lib/embeddings/embedder";
+import { createEmbeddingService } from "./lib/embeddings/embedder";
 
 async function run() {
-  const embedder = createEmbedder();
+  const embedder = createEmbeddingService();
 
   const vector = await embedder.embedQuery("apple is a fruit");
 

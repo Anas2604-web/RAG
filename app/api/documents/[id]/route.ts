@@ -47,7 +47,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
           }
         }
 
-        offset = scrollResult.next_page_offset || null;
+        offset = scrollResult.next_page_offset ? String(scrollResult.next_page_offset) : null;
       } while (offset);
 
       if (pointsToDelete.length > 0) {

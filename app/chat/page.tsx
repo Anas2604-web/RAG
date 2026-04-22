@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import SessionSidebar, { SessionMeta } from "@/components/sessions/SessionSidebar";
 import DocumentPanel from "@/components/documents/DocumentPanel";
 import ChatWindow from "@/components/chat/ChatWindow";
+import { DocumentSelectionProvider } from "@/components/documents/DocumentSelectionProvider";
 
 export default function ChatPage() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
@@ -84,26 +85,26 @@ export default function ChatPage() {
 
         {/* Content */}
         <main className="flex-1 flex overflow-hidden min-h-0">
-          {/* Documents panel */}
-          <div className="w-72 bg-slate-900 border-r border-slate-800 flex flex-col overflow-hidden flex-shrink-0 hidden lg:flex">
-            {activeSessionId && (
-              <DocumentPanel sessionId={activeSessionId} />
-            )}
-          </div>
-
-          {/* Chat */}
-          <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-            {activeSessionId ? (
-              <ChatWindow
-                sessionId={activeSessionId}
-                onTitleChange={handleSessionTitleChange}
-              />
-            ) : (
-              <div className="flex-1 flex items-center justify-center text-slate-500 text-sm">
-                Loading session…
+          {activeSessionId ? (
+            <DocumentSelectionProvider>
+              {/* Documents panel */}
+              <div className="w-72 bg-slate-900 border-r border-slate-800 flex flex-col overflow-hidden flex-shrink-0 hidden lg:flex">
+                <DocumentPanel sessionId={activeSessionId} />
               </div>
-            )}
-          </div>
+
+              {/* Chat */}
+              <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+                <ChatWindow
+                  sessionId={activeSessionId}
+                  onTitleChange={handleSessionTitleChange}
+                />
+              </div>
+            </DocumentSelectionProvider>
+          ) : (
+            <div className="flex-1 flex items-center justify-center text-slate-500 text-sm">
+              Loading session…
+            </div>
+          )}
         </main>
       </div>
     </div>

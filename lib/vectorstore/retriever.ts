@@ -17,6 +17,15 @@ export async function retrieve(
     const embedder = createEmbeddingService();
     const queryVector = await embedder.embedQuery(query);
 
+    // Log the filter being used
+    logger.debug({
+      event: "retriever.search_start",
+      query,
+      k,
+      collection,
+      filter: filter ? JSON.stringify(filter) : "none",
+    });
+
     // Search Qdrant
     const results = await qdrantClient.search(collection, {
       vector: queryVector,
@@ -50,6 +59,12 @@ export async function retrieve(
     return chunks;
   } catch (error) {
     const durationMs = Date.now() - startTime;
+    
+    // Log detailed error information
+    const errorDetails = error instanceof Error 
+      ? { message: error.message, stack: error.stack, name: error.name }
+      : { raw: String(error) };
+    
     logger.error(
       {
         event: "retriever.error",
@@ -58,6 +73,8 @@ export async function retrieve(
         collection,
         durationMs,
         error: error instanceof Error ? error.message : String(error),
+        errorDetails,
+        hasFilter: !!filter,
       },
       "Retrieval failed"
     );

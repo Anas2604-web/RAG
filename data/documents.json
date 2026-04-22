@@ -25,5 +25,23 @@
     "chunkCount": 1,
     "collection": "agentic_rag",
     "sizeBytes": 157
+  },
+  {
+    "id": "f3348e87-f643-433e-97d4-9a1a72ee1d64",
+    "filename": "SOP University of Limerick (AI and ML).pdf",
+    "mimeType": "application/pdf",
+    "uploadedAt": "2026-04-22T17:58:52.143Z",
+    "chunkCount": 14,
+    "collection": "agentic_rag",
+    "sizeBytes": 153789
+  },
+  {
+    "id": "85be0f62-8991-4b29-aad0-496cf54e34c8",
+    "filename": "2025431245.pdf",
+    "mimeType": "application/pdf",
+    "uploadedAt": "2026-04-22T18:16:49.976Z",
+    "chunkCount": 72,
+    "collection": "agentic_rag",
+    "sizeBytes": 666446
   }
 ]

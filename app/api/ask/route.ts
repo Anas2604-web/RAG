@@ -16,6 +16,15 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { query, sessionId, documentIds } = body;
 
+    console.log("API /ask received:", { 
+      query: query?.substring(0, 50), 
+      sessionId, 
+      documentIds,
+      documentIdsType: typeof documentIds,
+      documentIdsIsArray: Array.isArray(documentIds),
+      documentIdsLength: documentIds?.length 
+    });
+
     if (!query) {
       return NextResponse.json({ error: "Query is required" }, { status: 400 });
     }
@@ -46,16 +55,71 @@ export async function POST(req: NextRequest) {
 
     const llm = createLLM();
 
-    // Build Qdrant filter for selected documents
-    let filter = undefined;
-    if (documentIds && Array.isArray(documentIds) && documentIds.length > 0) {
-      filter = {
-        should: documentIds.map((docId: string) => ({
-          key: "documentId",
-          match: { value: docId },
-        })),
-      };
+    // Get all document IDs from this session
+    const sessionDocumentIds = chatSession.documents.map((doc) => doc.documentId);
+
+    // If no documents in session, return early
+    if (sessionDocumentIds.length === 0) {
+      const answer = "Please upload documents to this session before asking questions. I can only answer based on documents you've uploaded.";
+      
+      chatSession.messages.push({
+        role: "assistant",
+        content: answer,
+        citations: [],
+        trace: [],
+        createdAt: new Date(),
+      } as never);
+      await chatSession.save();
+
+      return NextResponse.json({ answer, citations: [] });
     }
+
+    // REQUIRE explicit document selection
+    // If no documents are selected, prompt user to select
+    if (!documentIds || !Array.isArray(documentIds) || documentIds.length === 0) {
+      const answer = "Please select at least one document from the list on the left before asking questions. I can only answer based on the documents you explicitly select.";
+      
+      chatSession.messages.push({
+        role: "assistant",
+        content: answer,
+        citations: [],
+        trace: [],
+        createdAt: new Date(),
+      } as never);
+      await chatSession.save();
+
+      return NextResponse.json({ answer, citations: [] });
+    }
+
+    // Verify selected documents belong to this session
+    const documentsToSearch = documentIds.filter((id: string) => 
+      sessionDocumentIds.includes(id)
+    );
+    
+    // If user selected documents that don't belong to this session, return error
+    if (documentsToSearch.length === 0) {
+      const answer = "The selected documents are not available in this session. Please select documents from the list on the left.";
+      
+      chatSession.messages.push({
+        role: "assistant",
+        content: answer,
+        citations: [],
+        trace: [],
+        createdAt: new Date(),
+      } as never);
+      await chatSession.save();
+
+      return NextResponse.json({ answer, citations: [] });
+    }
+
+    // Build Qdrant filter for the documents to search
+    // Qdrant filter format: https://qdrant.tech/documentation/concepts/filtering/
+    const filter: any = {
+      should: documentsToSearch.map((docId: string) => ({
+        key: "documentId",
+        match: { value: docId },
+      })),
+    };
 
     const chunks = await retrieve(query, undefined, filter);
 
@@ -63,7 +127,7 @@ export async function POST(req: NextRequest) {
       const answer =
         documentIds?.length > 0
           ? "I couldn't find any relevant information in the selected documents. Try selecting different documents or rephrasing your question."
-          : "I couldn't find any relevant information in the uploaded documents. Please upload documents related to your query, or try rephrasing.";
+          : "I couldn't find any relevant information in your uploaded documents for this session. Try rephrasing your question or upload additional documents.";
 
       chatSession.messages.push({
         role: "assistant",
@@ -134,6 +198,17 @@ Response format:
     return NextResponse.json({ answer, citations });
   } catch (error) {
     console.error("ASK ERROR:", error);
-    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+    
+    // Return more detailed error in development
+    const errorMessage = error instanceof Error ? error.message : "Something went wrong";
+    const isDevelopment = process.env.NODE_ENV === "development";
+    
+    return NextResponse.json(
+      { 
+        error: isDevelopment ? errorMessage : "Something went wrong",
+        details: isDevelopment && error instanceof Error ? error.stack : undefined,
+      },
+      { status: 500 }
+    );
   }
 }

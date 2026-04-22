@@ -3,22 +3,12 @@
 import {
   useState,
   useEffect,
-  createContext,
-  useContext,
   useCallback,
 } from "react";
 import { DocumentMetaData } from "@/types/index";
 import DropZone from "./DropZone";
 import DocumentRow from "./DocumentRow";
-
-// ── Context ───────────────────────────────────────────────────────────────────
-
-export const DocumentSelectionContext = createContext<{
-  selectedDocIds: string[];
-  setSelectedDocIds: (ids: string[]) => void;
-}>({ selectedDocIds: [], setSelectedDocIds: () => {} });
-
-export const useDocumentSelection = () => useContext(DocumentSelectionContext);
+import { useDocumentSelection } from "./DocumentSelectionProvider";
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -30,8 +20,12 @@ export default function DocumentPanel({ sessionId }: Props) {
   const [documents, setDocuments] = useState<DocumentMetaData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedDocIds, setSelectedDocIds] = useState<string[]>([]);
+  const [error, setError] = useState<{
+    message: string;
+    suggestions?: string[];
+    errorCode?: string;
+  } | null>(null);
+  const { selectedDocIds, setSelectedDocIds } = useDocumentSelection();
   const [showDropdown, setShowDropdown] = useState(false);
 
   const fetchDocuments = useCallback(async () => {
@@ -72,22 +66,43 @@ export default function DocumentPanel({ sessionId }: Props) {
         if (xhr.status === 200) {
           await fetchDocuments();
           setUploadProgress(0);
+          setError(null);
         } else {
-          const errData = JSON.parse(xhr.responseText);
-          setError(errData.error || "Upload failed");
+          try {
+            const errData = JSON.parse(xhr.responseText);
+            setError({
+              message: errData.error || "Upload failed",
+              suggestions: errData.suggestions || [],
+              errorCode: errData.errorCode,
+            });
+          } catch {
+            setError({
+              message: "Upload failed",
+              suggestions: ["Please try again"],
+            });
+          }
         }
         setIsLoading(false);
       });
 
       xhr.addEventListener("error", () => {
-        setError("Upload failed");
+        setError({
+          message: "Network error occurred during upload",
+          suggestions: [
+            "Check your internet connection",
+            "Try uploading again",
+          ],
+        });
         setIsLoading(false);
       });
 
       xhr.open("POST", "/api/upload");
       xhr.send(formData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setError({
+        message: err instanceof Error ? err.message : "Unknown error",
+        suggestions: ["Please try again"],
+      });
       setIsLoading(false);
     }
   };
@@ -116,8 +131,7 @@ export default function DocumentPanel({ sessionId }: Props) {
   const selectedDocs = documents.filter((d) => selectedDocIds.includes(d.id));
 
   return (
-    <DocumentSelectionContext.Provider value={{ selectedDocIds, setSelectedDocIds }}>
-      <div className="flex flex-col h-full bg-slate-900 overflow-hidden">
+    <div className="flex flex-col h-full bg-slate-900 overflow-hidden">
         {/* Top section */}
         <div className="p-4 border-b border-slate-800 flex-shrink-0 overflow-y-auto max-h-[55vh]">
           <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">
@@ -213,7 +227,13 @@ export default function DocumentPanel({ sessionId }: Props) {
             </div>
           )}
 
-          <DropZone onFileSelect={handleFileSelect} isLoading={isLoading} />
+          <DropZone
+            onFileSelect={handleFileSelect}
+            isLoading={isLoading}
+            onError={(message, suggestions) => {
+              setError({ message, suggestions });
+            }}
+          />
 
           {isLoading && uploadProgress > 0 && (
             <div className="mt-3">
@@ -228,8 +248,42 @@ export default function DocumentPanel({ sessionId }: Props) {
           )}
 
           {error && (
-            <div className="mt-3 p-2.5 bg-red-950/50 border border-red-800 rounded-lg text-xs text-red-300">
-              {error}
+            <div className="mt-3 p-3 bg-red-950/50 border border-red-800 rounded-lg">
+              <div className="flex items-start gap-2">
+                <svg
+                  className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-red-300 mb-1">
+                    {error.message}
+                  </p>
+                  {error.suggestions && error.suggestions.length > 0 && (
+                    <div className="mt-2 space-y-1">
+                      <p className="text-xs font-semibold text-red-400 uppercase">
+                        Suggestions:
+                      </p>
+                      <ul className="text-xs text-red-300/90 space-y-0.5 list-disc list-inside">
+                        {error.suggestions.map((suggestion, idx) => (
+                          <li key={idx}>{suggestion}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {error.errorCode && (
+                    <p className="text-xs text-red-500/70 mt-2">
+                      Error code: {error.errorCode}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -252,6 +306,5 @@ export default function DocumentPanel({ sessionId }: Props) {
           )}
         </div>
       </div>
-    </DocumentSelectionContext.Provider>
   );
 }

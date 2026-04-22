@@ -47,6 +47,17 @@ export async function ensureCollection(
       },
     });
   }
+
+  // Ensure payload index for documentId field (required for filtering)
+  try {
+    await qdrantClient.createPayloadIndex(name, {
+      field_name: "documentId",
+      field_schema: "keyword",
+    });
+  } catch (error) {
+    // Index might already exist, ignore error
+    console.log("Payload index creation skipped (may already exist)");
+  }
 }
 
 export async function deleteCollection(name: string): Promise<void> {

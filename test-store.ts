@@ -1,11 +1,11 @@
 import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 
-import { createEmbedder } from "./lib/embeddings/embedder";
+import { createEmbeddingService } from "./lib/embeddings/embedder";
 import { qdrantClient } from "./lib/vectorstore/qdrant-client";
 
 async function run() {
-  const embedder = createEmbedder();
+  const embedder = createEmbeddingService();
 
   const docs = [
   "React is a frontend JavaScript library used for building user interfaces",

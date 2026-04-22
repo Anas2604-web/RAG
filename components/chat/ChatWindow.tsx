@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 import MessageBubble from "./MessageBubble";
 import AgentTrace from "./AgentTrace";
 import { Citation, ReActTrace } from "@/types/index";
-import { useDocumentSelection } from "@/components/documents/DocumentPanel";
+import { useDocumentSelection } from "@/components/documents/DocumentSelectionProvider";
 
 interface Message {
   id: string;
@@ -88,13 +88,14 @@ export default function ChatWindow({ sessionId, onTitleChange }: Props) {
     setIsLoading(true);
 
     try {
+      console.log("Sending request with documentIds:", selectedDocIds);
       const response = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           query,
           sessionId,
-          documentIds: selectedDocIds.length > 0 ? selectedDocIds : undefined,
+          documentIds: selectedDocIds,
         }),
       });
 
@@ -151,7 +152,7 @@ export default function ChatWindow({ sessionId, onTitleChange }: Props) {
             </div>
             <p className="text-slate-400 font-medium">Start a conversation</p>
             <p className="text-slate-600 text-sm mt-1">
-              Upload a document and ask a question
+              Upload documents and select them to ask questions
             </p>
           </div>
         ) : (
@@ -196,7 +197,7 @@ export default function ChatWindow({ sessionId, onTitleChange }: Props) {
             placeholder={
               selectedDocIds.length > 0
                 ? `Ask from ${selectedDocIds.length} selected source${selectedDocIds.length !== 1 ? "s" : ""}…`
-                : "Ask a question…"
+                : "Select documents first, then ask a question…"
             }
             disabled={isLoading}
             className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-slate-200 placeholder-slate-500 text-sm"

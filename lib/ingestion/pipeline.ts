@@ -8,6 +8,12 @@ import { docStore } from "@/lib/docstore/doc-store";
 import { config } from "@/lib/config/env";
 import { logger } from "@/lib/logger/logger";
 import type { DocumentMetaData } from "@/types/index";
+import {
+  EmptyFileError,
+  EmbeddingError,
+  VectorStoreError,
+  wrapUnknownError,
+} from "./errors";
 
 export async function ingest(
   buffer: Buffer,
@@ -33,7 +39,7 @@ export async function ingest(
 
     // Check if text was extracted
     if (!text || text.trim().length === 0) {
-      throw new Error("No text could be extracted from the file");
+      throw new EmptyFileError(filename);
     }
 
     // 2. Split text
@@ -43,13 +49,20 @@ export async function ingest(
 
     // Check if chunks were created
     if (chunks.length === 0) {
-      throw new Error("No chunks were created from the text");
+      throw new EmptyFileError(filename);
     }
 
     // 3. Embed chunks
     logger.debug({ event: "ingestion.embed_start", chunkCount: chunks.length });
     const embeddingService = createEmbeddingService();
-    const vectors = await embeddingService.embed(chunks);
+    let vectors;
+    try {
+      vectors = await embeddingService.embed(chunks);
+    } catch (error) {
+      throw new EmbeddingError(
+        error instanceof Error ? error.message : String(error)
+      );
+    }
     logger.debug({ event: "ingestion.embed_end", vectorCount: vectors.length });
 
     // 4. Validate dimension
@@ -77,9 +90,15 @@ export async function ingest(
       },
     }));
 
-    await qdrantClient.upsert(collection, {
-      points,
-    });
+    try {
+      await qdrantClient.upsert(collection, {
+        points,
+      });
+    } catch (error) {
+      throw new VectorStoreError(
+        error instanceof Error ? error.message : String(error)
+      );
+    }
     logger.debug({ event: "ingestion.upsert_end", pointCount: points.length });
 
     // 7. Save metadata to DocStore
@@ -110,6 +129,8 @@ export async function ingest(
     return metadata;
   } catch (error) {
     const durationMs = Date.now() - startTime;
+    const wrappedError = wrapUnknownError(error);
+    
     logger.error(
       {
         event: "ingestion.error",
@@ -117,7 +138,8 @@ export async function ingest(
         collection,
         documentId,
         durationMs,
-        error: error instanceof Error ? error.message : String(error),
+        error: wrappedError.message,
+        errorCode: wrappedError.errorCode,
       },
       "Ingestion failed"
     );
@@ -139,6 +161,6 @@ export async function ingest(
       // Ignore compensation errors
     }
 
-    throw error;
+    throw wrappedError;
   }
 }

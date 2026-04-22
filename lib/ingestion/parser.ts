@@ -1,13 +1,7 @@
 import mammoth from "mammoth";
 import PDFParser from "pdf2json";
 import { logger } from "@/lib/logger/logger";
-
-export class UnsupportedFormatError extends Error {
-  constructor(filename: string) {
-    super(`Unsupported file type: ${filename}. Supported: txt, md, docx, pdf`);
-    this.name = "UnsupportedFormatError";
-  }
-}
+import { UnsupportedFormatError, PDFParsingError } from "./errors";
 
 async function parsePDF(buffer: Buffer): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -39,7 +33,12 @@ async function parsePDF(buffer: Buffer): Promise<string> {
                   if (text.R) {
                     for (const run of text.R) {
                       if (run.T) {
-                        texts.push(decodeURIComponent(run.T));
+                        try {
+                          texts.push(decodeURIComponent(run.T));
+                        } catch (e) {
+                          // If decoding fails, use the raw text
+                          texts.push(run.T);
+                        }
                       }
                     }
                   }
@@ -63,7 +62,9 @@ async function parsePDF(buffer: Buffer): Promise<string> {
           event: "pdf.parse.error",
           error: error instanceof Error ? error.message : String(error),
         });
-        reject(error);
+        throw new PDFParsingError(
+          error instanceof Error ? error.message : String(error)
+        );
       }
     });
 
