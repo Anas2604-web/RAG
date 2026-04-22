@@ -1,0 +1,331 @@
+================================================================================
+AGENTIC RAG SYSTEM - COMPREHENSIVE LEARNING PATH
+================================================================================
+
+This document outlines the recommended learning path to understand all concepts
+needed to develop the Agentic RAG system project.
+
+================================================================================
+SECTION 1: FOUNDATION - TYPESCRIPT & TESTING (Week 1-2)
+================================================================================
+
+Start here if you need to strengthen your TypeScript and testing fundamentals.
+
+1.1 TypeScript Fundamentals
+    - Official TypeScript Handbook (Free)
+    - https://www.typescriptlang.org/docs/
+    - Duration: Self-paced
+    - Topics: Types, interfaces, generics, advanced types
+
+1.2 Vitest Fundamentals
+    - Vitest Fundamentals Guide (Free)
+    - https://agentfactory.panaversity.org/docs/TypeScript-Language-Realtime-Interaction/testing-typescript-ai/vitest-fundamentals
+    - Duration: 2-3 hours
+    - Topics: Test runner setup, native TypeScript support, Jest-compatible API
+
+1.3 Property-Based Testing with fast-check
+    - Property-Based Testing with TypeScript & fast-check (Free Article)
+    - https://zenn.dev/samuraikun/articles/property-based-testing-in-typescript
+    - Duration: 1-2 hours
+    - Topics: Generating test inputs, property assertions, edge cases
+
+1.4 Test-Driven Development with Vitest
+    - Test-Driven Development (TDD) with TypeScript and ReactJS using Vitest (Free)
+    - https://medium.com/@rmbagt/test-driven-development-tdd-with-typescript-and-reactjs-using-vitest-7187d9126a0e
+    - Duration: 2-3 hours
+    - Topics: TDD workflow, async testing patterns, mocking
+
+================================================================================
+SECTION 2: CORE RAG & LANGCHAIN (Week 2-3)
+================================================================================
+
+Most important section for your project. Focus on RAG architecture and LangChain.
+
+2.1 Advanced LangChain Techniques: Mastering RAG Applications (RECOMMENDED)
+    - Udemy Course
+    - https://www.udemy.com/course/advanced-langchain-techniques-mastering-rag-applications/
+    - Duration: 8-12 hours
+    - Topics: RAG fundamentals, LangChain framework, advanced implementations
+    - Cost: Paid (usually $10-15 with discount)
+
+2.2 Agentic RAG with LangChain and LangGraph (HIGHLY RECOMMENDED)
+    - Udemy Course - Directly aligned with your project
+    - https://www.udemy.com/course/agentic-rag-with-langchain-and-langgraph/?couponCode=BE35C8D69C3B60F43050
+    - Duration: 10-15 hours
+    - Topics: ReAct agents, tools, session management, streaming
+    - Cost: Paid (usually $10-15 with discount)
+
+2.3 Hands-On RAG with LangChain
+    - Udemy Course - Practical implementation focus
+    - https://www.udemy.com/course/hands-on-rag-with-langchain-build-real-world-projects/
+    - Duration: 8-10 hours
+    - Topics: RAG pipeline, retrieval, context injection, grounded responses
+    - Cost: Paid (usually $10-15 with discount)
+
+2.4 Gen AI - RAG Application Development using LangChain
+    - Coursera Course - Comprehensive coverage
+    - https://www.coursera.org/learn/packt-gen-ai-rag-application-development-using-langchain-7hz6e
+    - Duration: 12-15 hours
+    - Topics: Advanced LLM applications, RAG systems, LangChain ecosystem
+    - Cost: Paid (Coursera subscription or audit free)
+
+2.5 Retrieval-Augmented Generation in Practice (FREE)
+    - Free Article - Conceptual understanding
+    - https://www.abstractalgorithms.dev/langchain-rag-retrieval-augmented-generation-in-practice
+    - Duration: 1-2 hours
+    - Topics: RAG pipeline architecture, LangChain composability
+
+2.6 Build RAG Systems with LangChain (FREE)
+    - DataCamp Course
+    - https://www.datacamp.com/courses/retrieval-augmented-generation-rag-with-langchain
+    - Duration: 4-6 hours
+    - Topics: RAG fundamentals, external data integration
+
+================================================================================
+SECTION 3: VECTOR DATABASES & EMBEDDINGS (Week 3-4)
+================================================================================
+
+Critical for understanding Qdrant and embeddings in your project.
+
+3.1 Qdrant Essentials Course (FREE - RECOMMENDED)
+    - Official Qdrant Course
+    - https://qdrant.tech/course/essentials/
+    - Duration: 6-8 hours
+    - Topics: Vector embeddings, similarity search, collections, filtering
+    - Includes: Movie recommendation engine project
+
+3.2 Semantic Search 101 (FREE - QUICK START)
+    - Official Qdrant Tutorial
+    - https://qdrant.tech/documentation/tutorials-basics/search-beginners/
+    - Duration: 30 minutes
+    - Topics: Quick semantic search setup, basic concepts
+
+3.3 Multi-Vector Search Course (FREE - ADVANCED)
+    - Official Qdrant Course
+    - https://qdrant.tech/course/multi-vector-search/
+    - Duration: 4-6 hours
+    - Topics: ColBERT, ColPali, MaxSim metric, billion-scale search
+    - Note: Advanced topic, can revisit later
+
+3.4 Introduction to Qdrant (Vector Database) Using Python
+    - Udemy Course
+    - https://www.udemy.com/course/qdrant-vector-database/?srsltid=AfmBOoqiIolyEp2Ob3bDTuzKM18hl-eHCQCA43oYEvau3lU4rcXC4KT4
+    - Duration: 3-4 hours
+    - Topics: Qdrant basics, indexing, snapshots, Python client
+    - Cost: Paid (usually $10-15 with discount)
+
+3.5 Qdrant + Embeddings: A Gentle Guide (FREE)
+    - Medium Article
+    - https://devendrayadav2494.medium.com/qdrant-embeddings-a-gentle-line-by-line-medium-guide-to-load-vectors-make-a-collection-and-4fe25e281564
+    - Duration: 1-2 hours
+    - Topics: Loading vectors, creating collections, running searches
+
+3.6 Building Semantic Search with Qdrant and OpenAI Embeddings (FREE)
+    - Towards AI Article
+    - https://pub.towardsai.net/building-semantic-search-with-qdrant-and-openai-embeddings-a-practical-guide-to-vector-databases-f75d12948a29
+    - Duration: 1-2 hours
+    - Topics: Tokens, embeddings, vectors, semantic search implementation
+
+================================================================================
+SECTION 4: NEXT.JS 16 & FULL-STACK DEVELOPMENT (Week 4-5)
+================================================================================
+
+Learn Next.js 16 for building the API routes and UI.
+
+4.1 The Complete Developer's Guide 2026 (RECOMMENDED)
+    - Udemy Course - Latest Next.js 16
+    - https://www.udemy.com/course/nextjs-16-complete-course-build-production-ready-projects/
+    - Duration: 15-20 hours
+    - Topics: File-based routing, RSC, API routes, SSE, production deployment
+    - Projects: E-commerce, Movie app, Note-taking app
+    - Cost: Paid (usually $10-15 with discount)
+
+4.2 The Ultimate Modern Next.js Complete Course 2024
+    - Udemy Course - In-depth exploration
+    - https://www.udemy.com/course/ultimate-modern-nextjs-complete-course-2024
+    - Duration: 20-25 hours
+    - Topics: Comprehensive Next.js coverage
+    - Cost: Paid (usually $10-15 with discount)
+
+4.3 Next.js From Scratch
+    - Udemy Course - Fundamentals focus
+    - https://www.udemy.com/course/nextjs-from-scratch/
+    - Duration: 8-10 hours
+    - Topics: File-based routing, React Server Components, data fetching, API routes
+    - Cost: Paid (usually $10-15 with discount)
+
+4.4 Scrimba's Learn Next.js (FREE - INTERACTIVE)
+    - Free Interactive Course
+    - https://scrimba.com/articles/best-next-js-courses-and-tutorials-2026/
+    - Duration: 4.4 hours
+    - Topics: Interactive coding alongside instructor
+    - Format: Code-along format
+
+4.5 Official Next.js Tutorial (FREE)
+    - Official Documentation
+    - https://nextjs.org/learn
+    - Duration: Self-paced
+    - Topics: Official best practices, latest features
+    - Format: Documentation-driven
+
+================================================================================
+SECTION 5: AGENTIC RAG - HANDS-ON PROJECT (Week 5-6+)
+================================================================================
+
+Combine all knowledge into building your agentic RAG system.
+
+5.1 Agentic RAG with LangChain and LangGraph (REVISIT)
+    - Udemy Course - Second pass for implementation
+    - https://www.udemy.com/course/agentic-rag-with-langchain-and-langgraph/?couponCode=BE35C8D69C3B60F43050
+    - Duration: 10-15 hours (second pass)
+    - Focus: Building agents, tools, session management
+    - Cost: Paid
+
+5.2 Your Project Implementation
+    - Build the agentic RAG system following the tasks in docs/tasks.md
+    - Reference all previous courses as needed
+    - Duration: 2-4 weeks depending on experience
+
+================================================================================
+SUGGESTED LEARNING SCHEDULE
+================================================================================
+
+WEEK 1-2: FOUNDATION
+  Day 1-2:   TypeScript Fundamentals
+  Day 3-4:   Vitest Fundamentals
+  Day 5-6:   Property-Based Testing with fast-check
+  Day 7-10:  Test-Driven Development with Vitest
+  Day 11-14: Review and practice
+
+WEEK 2-3: CORE RAG & LANGCHAIN
+  Day 1-5:   Advanced LangChain Techniques (Udemy)
+  Day 6-10:  Agentic RAG with LangChain (Udemy)
+  Day 11-14: Hands-On RAG with LangChain (Udemy)
+
+WEEK 3-4: VECTOR DATABASES
+  Day 1-3:   Qdrant Essentials Course (Official)
+  Day 4:     Semantic Search 101 (Quick start)
+  Day 5-7:   Introduction to Qdrant (Udemy)
+  Day 8-10:  Qdrant + Embeddings Guide (Article)
+  Day 11-14: Building Semantic Search (Article)
+
+WEEK 4-5: NEXT.JS 16
+  Day 1-7:   The Complete Developer's Guide 2026 (Udemy)
+  Day 8-10:  Scrimba's Learn Next.js (Interactive)
+  Day 11-14: Official Next.js Tutorial + Practice
+
+WEEK 5-6+: BUILD YOUR PROJECT
+  Day 1-3:   Review Agentic RAG course (second pass)
+  Day 4+:    Implement your agentic RAG system
+            - Follow docs/tasks.md
+            - Reference courses as needed
+            - Build incrementally
+
+================================================================================
+KEY TOPICS TO FOCUS ON
+================================================================================
+
+For your specific Agentic RAG project, prioritize these topics:
+
+✓ RAG Pipeline Architecture
+  - Document parsing (PDF, DOCX, TXT, MD)
+  - Text splitting and chunking
+  - Embedding generation
+  - Vector storage and retrieval
+  - Metadata management
+
+✓ Vector Embeddings & Similarity Search
+  - How embeddings work
+  - Dimension validation
+  - Similarity metrics (cosine, euclidean)
+  - Filtering and metadata queries
+  - Collection management
+
+✓ LangChain Agents & Tools
+  - ReAct agent pattern
+  - Tool definitions and execution
+  - Agent memory and session management
+  - Error handling and sanitization
+  - Citation extraction
+
+✓ Next.js API Routes & Streaming
+  - API route handlers
+  - Server-Sent Events (SSE)
+  - Streaming responses
+  - Error handling and validation
+  - CORS and security
+
+✓ TypeScript & Testing
+  - Type safety for RAG components
+  - Property-based testing with fast-check
+  - Unit tests for parsers and splitters
+  - Integration tests for pipeline
+  - Mocking external services
+
+✓ Document Management
+  - File upload handling
+  - Metadata storage
+  - Document deletion and cleanup
+  - Collection isolation
+
+================================================================================
+ADDITIONAL RESOURCES
+================================================================================
+
+Official Documentation (Always Reference):
+  - LangChain Documentation: https://python.langchain.com/
+  - Qdrant Documentation: https://qdrant.tech/documentation/
+  - Next.js Documentation: https://nextjs.org/docs
+  - TypeScript Documentation: https://www.typescriptlang.org/docs/
+
+YouTube Channels to Follow:
+  - LangChain Official Channel
+  - Qdrant Official Channel
+  - Next.js Official Channel
+  - Vercel Engineering
+
+Community Resources:
+  - LangChain Discord: https://discord.gg/langchain
+  - Qdrant Community: https://qdrant.tech/community/
+  - Next.js Discussions: https://github.com/vercel/next.js/discussions
+
+================================================================================
+NOTES
+================================================================================
+
+1. Udemy courses often have discounts (50-90% off). Wait for sales or use
+   coupon codes provided in course links.
+
+2. Free resources are marked with (FREE) - prioritize these if budget is limited.
+
+3. The learning order is flexible - you can parallelize some sections.
+
+4. Revisit courses during implementation when you encounter specific problems.
+
+5. Practice by building small projects after each section:
+   - After RAG section: Build a simple document Q&A system
+   - After Vector DB section: Build a semantic search engine
+   - After Next.js section: Build a simple API with streaming
+   - Final: Combine all into your agentic RAG system
+
+6. Don't try to learn everything before coding. Start coding early and
+   reference courses as needed.
+
+7. The project in docs/tasks.md is your ultimate learning goal - use it
+   as a guide for what to focus on.
+
+================================================================================
+ESTIMATED TOTAL TIME
+================================================================================
+
+Foundation (TypeScript & Testing):     20-30 hours
+Core RAG & LangChain:                  30-40 hours
+Vector Databases & Embeddings:         20-30 hours
+Next.js 16 & Full-Stack:               30-40 hours
+Building Your Project:                 40-60 hours
+                                       ___________
+TOTAL:                                 140-200 hours
+
+This is approximately 4-6 weeks of full-time learning and development.
+
+================================================================================

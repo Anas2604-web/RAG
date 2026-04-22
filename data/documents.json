@@ -16,5 +16,14 @@
     "chunkCount": 1,
     "collection": "agentic_rag",
     "sizeBytes": 198
+  },
+  {
+    "id": "804e1f71-4d21-4c10-bc27-b2ea78765c0b",
+    "filename": "sample.txt",
+    "mimeType": "text/plain",
+    "uploadedAt": "2026-04-21T06:59:11.673Z",
+    "chunkCount": 1,
+    "collection": "agentic_rag",
+    "sizeBytes": 157
   }
 ]

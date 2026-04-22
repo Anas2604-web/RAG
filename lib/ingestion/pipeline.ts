@@ -31,10 +31,20 @@ export async function ingest(
     const text = await parseFile(buffer, filename);
     logger.debug({ event: "ingestion.parse_end", textLength: text.length });
 
+    // Check if text was extracted
+    if (!text || text.trim().length === 0) {
+      throw new Error("No text could be extracted from the file");
+    }
+
     // 2. Split text
     logger.debug({ event: "ingestion.split_start", textLength: text.length });
     const chunks = await splitText(text, config.CHUNK_SIZE, config.CHUNK_OVERLAP);
     logger.debug({ event: "ingestion.split_end", chunkCount: chunks.length });
+
+    // Check if chunks were created
+    if (chunks.length === 0) {
+      throw new Error("No chunks were created from the text");
+    }
 
     // 3. Embed chunks
     logger.debug({ event: "ingestion.embed_start", chunkCount: chunks.length });

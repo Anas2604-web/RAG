@@ -31,3 +31,12 @@ export interface DocumentMetaData{
     collection: string,
     sizeBytes: number
 }
+
+
+export interface Citation {
+    chunkId: string,
+    documentId: string,
+    filename: string,
+    chunkIndex: number,
+    text: string
+}

@@ -1,11 +1,74 @@
 import mammoth from "mammoth";
+import PDFParser from "pdf2json";
 import { logger } from "@/lib/logger/logger";
 
 export class UnsupportedFormatError extends Error {
   constructor(filename: string) {
-    super(`Unsupported file type: ${filename}. Supported: txt, md, docx`);
+    super(`Unsupported file type: ${filename}. Supported: txt, md, docx, pdf`);
     this.name = "UnsupportedFormatError";
   }
+}
+
+async function parsePDF(buffer: Buffer): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const pdfParser = new PDFParser();
+
+    pdfParser.on("pdfParser_dataError", (errData: any) => {
+      reject(new Error(errData.parserError));
+    });
+
+    pdfParser.on("pdfParser_dataReady", () => {
+      try {
+        const rawText = (pdfParser as any).getRawTextContent();
+        
+        // Log what we got
+        logger.debug({
+          event: "pdf.parse",
+          rawTextLength: rawText?.length || 0,
+          rawTextPreview: rawText?.substring(0, 200) || "",
+        });
+        
+        // If getRawTextContent returns empty, try getting text from pages
+        if (!rawText || rawText.trim().length === 0) {
+          const pdfData = (pdfParser as any).data;
+          if (pdfData && pdfData.Pages) {
+            const texts: string[] = [];
+            for (const page of pdfData.Pages) {
+              if (page.Texts) {
+                for (const text of page.Texts) {
+                  if (text.R) {
+                    for (const run of text.R) {
+                      if (run.T) {
+                        texts.push(decodeURIComponent(run.T));
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            const extractedText = texts.join(" ");
+            logger.debug({
+              event: "pdf.parse.fallback",
+              extractedTextLength: extractedText.length,
+            });
+            resolve(extractedText);
+          } else {
+            resolve(rawText || "");
+          }
+        } else {
+          resolve(rawText);
+        }
+      } catch (error) {
+        logger.error({
+          event: "pdf.parse.error",
+          error: error instanceof Error ? error.message : String(error),
+        });
+        reject(error);
+      }
+    });
+
+    pdfParser.parseBuffer(buffer);
+  });
 }
 
 export async function parseFile(
@@ -17,7 +80,9 @@ export async function parseFile(
   try {
     let text: string;
 
-    if (ext === "docx") {
+    if (ext === "pdf") {
+      text = await parsePDF(buffer);
+    } else if (ext === "docx") {
       const result = await mammoth.extractRawText({ buffer });
       text = result.value;
     } else if (ext === "txt" || ext === "md") {

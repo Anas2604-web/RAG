@@ -21,7 +21,7 @@ export async function retrieve(
     const results = await qdrantClient.search(collection, {
       vector: queryVector,
       limit: k,
-      filter: filter ? { must: [filter] } : undefined,
+      filter: filter,
     });
 
     // Map results to DocumentChunk[]
