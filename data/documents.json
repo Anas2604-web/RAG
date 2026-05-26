@@ -1,47 +1,29 @@
 [
   {
-    "id": "bff79731-9880-404d-b63a-ac388ea4a1d8",
-    "filename": "knowledge.txt",
-    "mimeType": "text/plain",
-    "uploadedAt": "2026-04-12T00:04:39.736Z",
-    "chunkCount": 2,
+    "id": "5cec9dbb-5e43-4f5a-8b95-7596fd622907",
+    "filename": "Anas_Khan_Resume.docx",
+    "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "uploadedAt": "2026-05-26T23:24:04.243Z",
+    "chunkCount": 9,
     "collection": "agentic_rag",
-    "sizeBytes": 815
+    "sizeBytes": 11703
   },
   {
-    "id": "77f1c442-3173-4ec9-b6dd-c6b7997c6086",
-    "filename": "backend-guide.txt",
-    "mimeType": "text/plain",
-    "uploadedAt": "2026-04-13T18:02:36.726Z",
-    "chunkCount": 1,
-    "collection": "agentic_rag",
-    "sizeBytes": 198
-  },
-  {
-    "id": "804e1f71-4d21-4c10-bc27-b2ea78765c0b",
-    "filename": "sample.txt",
-    "mimeType": "text/plain",
-    "uploadedAt": "2026-04-21T06:59:11.673Z",
-    "chunkCount": 1,
-    "collection": "agentic_rag",
-    "sizeBytes": 157
-  },
-  {
-    "id": "f3348e87-f643-433e-97d4-9a1a72ee1d64",
-    "filename": "SOP University of Limerick (AI and ML).pdf",
-    "mimeType": "application/pdf",
-    "uploadedAt": "2026-04-22T17:58:52.143Z",
+    "id": "677ca4c7-13e9-4874-9cc6-e4825aef51b3",
+    "filename": "8-sem-syllabus.pdf.docx",
+    "mimeType": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "uploadedAt": "2026-05-26T23:24:28.977Z",
     "chunkCount": 14,
     "collection": "agentic_rag",
-    "sizeBytes": 153789
+    "sizeBytes": 19038
   },
   {
-    "id": "85be0f62-8991-4b29-aad0-496cf54e34c8",
-    "filename": "2025431245.pdf",
+    "id": "2dc8e0b8-bb70-4082-84db-fe98c10c4f3f",
+    "filename": "8-sem-syllabus.pdf.pdf",
     "mimeType": "application/pdf",
-    "uploadedAt": "2026-04-22T18:16:49.976Z",
-    "chunkCount": 72,
+    "uploadedAt": "2026-05-26T23:28:20.993Z",
+    "chunkCount": 30,
     "collection": "agentic_rag",
-    "sizeBytes": 666446
+    "sizeBytes": 275646
   }
 ]

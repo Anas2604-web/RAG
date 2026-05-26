@@ -1,40 +1,40 @@
 import { ChatOpenAI } from "@langchain/openai";
-// import { HuggingFaceInference } from "@langchain/community/llms/hf";
 import { ChatTogetherAI } from "@langchain/community/chat_models/togetherai";
 import { ChatOllama } from "@langchain/ollama";
+import { ChatGroq } from "@langchain/groq";
 import { config } from "@/lib/config/env";
 
 export function createLLM() {
-//   if (config.LLM_PROVIDER === "huggingface") {
-//     return new HuggingFaceInference({
-//       apiKey: config.HF_API_KEY,
-//       model: config.LLM_MODEL,
-//     });
-//   }
+  switch (config.LLM_PROVIDER) {
+    case "groq":
+      return new ChatGroq({
+        apiKey: config.GROQ_API_KEY,
+        model: config.LLM_MODEL ?? "llama-3.3-70b-versatile",
+        temperature: 0,
+      });
 
-if (config.LLM_PROVIDER === "ollama") {
-  return new ChatOllama({
-    model: config.LLM_MODEL,
-    baseUrl: config.OLLAMA_BASE_URL,
-  });
-}
+    case "openai":
+      return new ChatOpenAI({
+        apiKey: config.OPENAI_API_KEY,
+        model: config.LLM_MODEL ?? "gpt-4o-mini",
+        temperature: 0,
+      });
 
+    case "together":
+      return new ChatTogetherAI({
+        apiKey: config.TOGETHER_API_KEY,
+        model: config.LLM_MODEL,
+        temperature: 0,
+      });
 
-  if (config.LLM_PROVIDER === "openai") {
-    return new ChatOpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-      model: "gpt-4o-mini",
-    });
+    case "ollama":
+      return new ChatOllama({
+        model: config.LLM_MODEL,
+        baseUrl: config.OLLAMA_BASE_URL,
+        temperature: 0,
+      });
+
+    default:
+      throw new Error(`Unsupported LLM provider: ${config.LLM_PROVIDER}`);
   }
-
-  if (config.LLM_PROVIDER === "together") {
-  return new ChatTogetherAI({
-    apiKey: config.TOGETHER_API_KEY,
-    model: config.LLM_MODEL,
-  });
 }
-
-  throw new Error(`Unsupported LLM provider: ${config.LLM_PROVIDER}`);
-}
-
-  
