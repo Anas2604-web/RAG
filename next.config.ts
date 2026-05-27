@@ -2,7 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   turbopack: {
-    // Empty config to silence the warning
+    root: __dirname,
+  },
+  experimental: {
+    serverComponentsExternalPackages: ["mongoose", "pdf2json", "mammoth"],
   },
 };
 
