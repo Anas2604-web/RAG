@@ -8,21 +8,33 @@ export class VectorStoreError extends Error {
   }
 }
 
-let qdrantClient: QdrantClient;
+let client: QdrantClient | null = null;
 
-try {
-  qdrantClient = new QdrantClient({
-    url: config.QDRANT_URL,
-    apiKey: config.QDRANT_API_KEY,
-    timeout: 5000,
-  });
-} catch (error) {
-  throw new VectorStoreError(
-    `Failed to initialize Qdrant client: ${error instanceof Error ? error.message : String(error)}`
-  );
+function getClient(): QdrantClient {
+  if (!client) {
+    try {
+      client = new QdrantClient({
+        url: config.QDRANT_URL,
+        apiKey: config.QDRANT_API_KEY,
+        timeout: 5000,
+        checkCompatibility: false,
+      });
+    } catch (error) {
+      throw new VectorStoreError(
+        `Failed to initialize Qdrant client: ${error instanceof Error ? error.message : String(error)}`
+      );
+    }
+  }
+  return client;
 }
 
-export { qdrantClient };
+export const qdrantClient: QdrantClient = new Proxy({} as QdrantClient, {
+  get(_target, prop) {
+    const instance = getClient();
+    const value = Reflect.get(instance, prop, instance);
+    return typeof value === "function" ? value.bind(instance) : value;
+  },
+});
 
 export async function collectionExists(name: string): Promise<boolean> {
   try {
@@ -48,14 +60,12 @@ export async function ensureCollection(
     });
   }
 
-  // Ensure payload index for documentId field (required for filtering)
   try {
     await qdrantClient.createPayloadIndex(name, {
       field_name: "documentId",
       field_schema: "keyword",
     });
-  } catch (error) {
-    // Index might already exist, ignore error
+  } catch {
     console.log("Payload index creation skipped (may already exist)");
   }
 }
