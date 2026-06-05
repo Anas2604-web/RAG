@@ -65,6 +65,7 @@ export default function ChatPage() {
         activeSessionId={activeSessionId}
         onSelectSession={handleSelectSession}
         onNewSession={handleNewSession}
+        onTitleChange={handleSessionTitleChange}
       />
 
       {loading ? (

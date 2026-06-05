@@ -110,7 +110,7 @@ const DropZone = forwardRef<DropZoneHandle, DropZoneProps>(
             {selectedFile ? selectedFile.name : 'Add source'}
           </p>
           <p className="text-xs text-slate-500">
-            Drop or click · PDF, DOCX, TXT, MD
+            Drop or click · PDF, DOCX, TXT, MD · max 10 MB
           </p>
         </div>
       </div>
