@@ -1,35 +1,25 @@
 "use client";
 
-import {
-  useState,
-  useEffect,
-  useCallback,
-  useRef,
-} from "react";
-import { DocumentMetaData } from "@/types/index";
+import { useState, useEffect, useCallback, useRef } from "react";
 import DropZone, { DropZoneHandle } from "./DropZone";
-import DocumentRow from "./DocumentRow";
+import SourceCard from "@/components/sources/SourceCard";
 import { useDocumentSelection } from "./DocumentSelectionProvider";
-
-// ── Component ─────────────────────────────────────────────────────────────────
 
 interface Props {
   sessionId: string;
 }
 
 export default function DocumentPanel({ sessionId }: Props) {
-  const [documents, setDocuments] = useState<DocumentMetaData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  // 'uploading' = transferring bytes, 'processing' = server ingesting, idle otherwise
-  const [uploadStage, setUploadStage] = useState<'idle' | 'uploading' | 'processing'>('idle');
+  const [uploadStage, setUploadStage] = useState<"idle" | "uploading" | "processing">("idle");
   const [error, setError] = useState<{
     message: string;
     suggestions?: string[];
     errorCode?: string;
   } | null>(null);
-  const { selectedDocIds, setSelectedDocIds } = useDocumentSelection();
-  const [showDropdown, setShowDropdown] = useState(false);
+  const { selectedDocIds, setSelectedDocIds, documents, setDocuments } =
+    useDocumentSelection();
   const dropZoneRef = useRef<DropZoneHandle>(null);
 
   const fetchDocuments = useCallback(async () => {
@@ -39,22 +29,19 @@ export default function DocumentPanel({ sessionId }: Props) {
     } catch (err) {
       console.error("Failed to fetch documents:", err);
     }
-  }, [sessionId]);
+  }, [sessionId, setDocuments]);
 
-  // Reload documents when session changes
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDocuments([]);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedDocIds([]);
     fetchDocuments();
-  }, [fetchDocuments]);
+  }, [fetchDocuments, setDocuments, setSelectedDocIds]);
 
   const handleFileSelect = async (file: File) => {
     setIsLoading(true);
     setError(null);
     setUploadProgress(0);
-    setUploadStage('uploading');
+    setUploadStage("uploading");
 
     const formData = new FormData();
     formData.append("file", file);
@@ -65,32 +52,28 @@ export default function DocumentPanel({ sessionId }: Props) {
 
       xhr.upload.addEventListener("progress", (e) => {
         if (e.lengthComputable) {
-          // Cap at 90% — the remaining 10% is server-side processing
-          const transferPct = (e.loaded / e.total) * 90;
-          setUploadProgress(transferPct);
+          setUploadProgress((e.loaded / e.total) * 90);
         }
       });
 
       xhr.upload.addEventListener("load", () => {
-        // Bytes fully sent; server is now parsing + embedding
         setUploadProgress(90);
-        setUploadStage('processing');
+        setUploadStage("processing");
       });
 
       xhr.addEventListener("load", async () => {
         if (xhr.status === 200) {
           setUploadProgress(100);
           await fetchDocuments();
-          // Reset everything after a brief moment so user sees 100%
           setTimeout(() => {
             setUploadProgress(0);
-            setUploadStage('idle');
+            setUploadStage("idle");
             setIsLoading(false);
             dropZoneRef.current?.reset();
           }, 600);
           setError(null);
         } else {
-          setUploadStage('idle');
+          setUploadStage("idle");
           setUploadProgress(0);
           setIsLoading(false);
           try {
@@ -101,31 +84,25 @@ export default function DocumentPanel({ sessionId }: Props) {
               errorCode: errData.errorCode,
             });
           } catch {
-            setError({
-              message: "Upload failed",
-              suggestions: ["Please try again"],
-            });
+            setError({ message: "Upload failed", suggestions: ["Please try again"] });
           }
         }
       });
 
       xhr.addEventListener("error", () => {
-        setUploadStage('idle');
+        setUploadStage("idle");
         setUploadProgress(0);
         setIsLoading(false);
         setError({
           message: "Network error occurred during upload",
-          suggestions: [
-            "Check your internet connection",
-            "Try uploading again",
-          ],
+          suggestions: ["Check your internet connection", "Try uploading again"],
         });
       });
 
       xhr.open("POST", "/api/upload");
       xhr.send(formData);
     } catch (err) {
-      setUploadStage('idle');
+      setUploadStage("idle");
       setUploadProgress(0);
       setIsLoading(false);
       setError({
@@ -140,211 +117,86 @@ export default function DocumentPanel({ sessionId }: Props) {
     setSelectedDocIds((prev) => prev.filter((did) => did !== id));
   };
 
-  const toggleDocumentSelection = (docId: string) => {
-    setSelectedDocIds((prev) =>
-      prev.includes(docId) ? prev.filter((id) => id !== docId) : [...prev, docId]
-    );
-  };
-
-  const selectAll = () => {
-    setSelectedDocIds(documents.map((d) => d.id));
-    setShowDropdown(false);
-  };
-
-  const clearSelection = () => {
-    setSelectedDocIds([]);
-    setShowDropdown(false);
-  };
-
-  const selectedDocs = documents.filter((d) => selectedDocIds.includes(d.id));
+  const selectAll = () => setSelectedDocIds(documents.map((d) => d.id));
+  const clearSelection = () => setSelectedDocIds([]);
 
   return (
-    <div className="flex flex-col h-full bg-slate-900 overflow-hidden">
-        {/* Top section */}
-        <div className="p-4 border-b border-slate-800 flex-shrink-0 overflow-y-auto max-h-[55vh]">
-          <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">
-            Documents
-          </h2>
-
-          {/* Source selector */}
-          {documents.length > 0 && (
-            <div className="mb-4">
-              <div className="relative">
-                <button
-                  onClick={() => setShowDropdown((v) => !v)}
-                  className="w-full flex items-center justify-between px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition-colors border border-slate-700 text-sm"
-                >
-                  <span>
-                    {selectedDocIds.length === 0
-                      ? "Select sources"
-                      : `${selectedDocIds.length} source${selectedDocIds.length !== 1 ? "s" : ""} selected`}
-                  </span>
-                  <svg
-                    className={`w-4 h-4 transition-transform ${showDropdown ? "rotate-180" : ""}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-
-                {showDropdown && (
-                  <div className="absolute z-10 w-full mt-1 bg-slate-800 border border-slate-700 rounded-lg shadow-xl max-h-56 overflow-y-auto">
-                    <div className="flex justify-between p-2 border-b border-slate-700">
-                      <button onClick={selectAll} className="text-xs text-blue-400 hover:text-blue-300 px-2 py-1">
-                        Select all
-                      </button>
-                      <button onClick={clearSelection} className="text-xs text-slate-400 hover:text-slate-300 px-2 py-1">
-                        Clear
-                      </button>
-                    </div>
-                    <div className="p-2 space-y-0.5">
-                      {documents.map((doc) => (
-                        <label
-                          key={doc.id}
-                          className="flex items-center gap-2 p-2 rounded hover:bg-slate-700 cursor-pointer"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={selectedDocIds.includes(doc.id)}
-                            onChange={() => toggleDocumentSelection(doc.id)}
-                            className="w-4 h-4 text-blue-600 bg-slate-700 border-slate-600 rounded"
-                          />
-                          <span className="text-sm text-slate-300 truncate flex-1">
-                            {doc.filename}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {selectedDocs.length > 0 && (
-                <div className="mt-2 p-2.5 bg-blue-950/30 border border-blue-800/40 rounded-lg">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-semibold text-blue-300 uppercase">Active sources</span>
-                    <button onClick={clearSelection} className="text-xs text-blue-400 hover:text-blue-300">
-                      Clear
-                    </button>
-                  </div>
-                  <div className="space-y-1">
-                    {selectedDocs.map((doc) => (
-                      <div
-                        key={doc.id}
-                        className="flex items-center gap-1.5 text-xs text-slate-300 bg-slate-800/50 px-2 py-1 rounded"
-                      >
-                        <svg className="w-3 h-3 text-blue-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        <span className="truncate flex-1">{doc.filename}</span>
-                        <button
-                          onClick={() => toggleDocumentSelection(doc.id)}
-                          className="text-slate-500 hover:text-slate-300"
-                        >
-                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                          </svg>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          <DropZone
-            ref={dropZoneRef}
-            onFileSelect={handleFileSelect}
-            isLoading={isLoading}
-            onError={(message, suggestions) => {
-              setError({ message, suggestions });
-            }}
-          />
-
-          {isLoading && (
-            <div className="mt-3">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-xs text-slate-400">
-                  {uploadStage === 'processing'
-                    ? 'Processing document…'
-                    : 'Uploading…'}
-                </span>
-                <span className="text-xs text-slate-500">
-                  {uploadProgress < 100 ? `${Math.round(uploadProgress)}%` : 'Done'}
-                </span>
-              </div>
-              <div className="w-full bg-slate-700 rounded-full h-1.5">
-                <div
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    uploadStage === 'processing' ? 'bg-yellow-500 animate-pulse' : 'bg-blue-500'
-                  }`}
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-            </div>
-          )}
-
-          {error && (
-            <div className="mt-3 p-3 bg-red-950/50 border border-red-800 rounded-lg">
-              <div className="flex items-start gap-2">
-                <svg
-                  className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-red-300 mb-1">
-                    {error.message}
-                  </p>
-                  {error.suggestions && error.suggestions.length > 0 && (
-                    <div className="mt-2 space-y-1">
-                      <p className="text-xs font-semibold text-red-400 uppercase">
-                        Suggestions:
-                      </p>
-                      <ul className="text-xs text-red-300/90 space-y-0.5 list-disc list-inside">
-                        {error.suggestions.map((suggestion, idx) => (
-                          <li key={idx}>{suggestion}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {error.errorCode && (
-                    <p className="text-xs text-red-500/70 mt-2">
-                      Error code: {error.errorCode}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Document list */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-1.5 min-h-0">
-          {documents.length === 0 ? (
-            <p className="text-xs text-slate-600 text-center py-6">
-              No documents in this session
+    <div className="flex flex-col h-full overflow-hidden bg-white">
+      <div className="panel-header flex-shrink-0">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="panel-title">Sources</h2>
+            <p className="panel-subtitle">
+              {documents.length} document{documents.length !== 1 ? "s" : ""} ·{" "}
+              {selectedDocIds.length} selected
             </p>
-          ) : (
-            documents.map((doc) => (
-              <DocumentRow
-                key={doc.id}
-                document={doc}
-                sessionId={sessionId}
-                onDelete={handleDeleteDocument}
-              />
-            ))
+          </div>
+          {documents.length > 0 && (
+            <div className="flex gap-1">
+              <button onClick={selectAll} className="btn-ghost text-xs px-2 text-blue-600">
+                All
+              </button>
+              <button onClick={clearSelection} className="btn-ghost text-xs px-2">
+                Clear
+              </button>
+            </div>
           )}
         </div>
       </div>
+
+      <div className="p-3 border-b border-slate-100 flex-shrink-0">
+        <DropZone
+          ref={dropZoneRef}
+          onFileSelect={handleFileSelect}
+          isLoading={isLoading}
+          onError={(message, suggestions) => setError({ message, suggestions })}
+        />
+
+        {isLoading && (
+          <div className="mt-3">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-xs text-slate-500">
+                {uploadStage === "processing" ? "Processing…" : "Uploading…"}
+              </span>
+              <span className="text-xs text-slate-400">
+                {uploadProgress < 100 ? `${Math.round(uploadProgress)}%` : "Done"}
+              </span>
+            </div>
+            <div className="progress-track h-1.5">
+              <div className="progress-fill h-1.5" style={{ width: `${uploadProgress}%` }} />
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="alert-error mt-3 p-3 text-sm">{error.message}</div>
+        )}
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-3 space-y-2 min-h-0">
+        {documents.length === 0 ? (
+          <div className="text-center py-10 px-4">
+            <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-slate-100 flex items-center justify-center">
+              <svg className="w-7 h-7 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-slate-700">Add your first source</p>
+            <p className="text-xs text-slate-500 mt-1">
+              Upload PDFs, DOCX, or text files to begin research.
+            </p>
+          </div>
+        ) : (
+          documents.map((doc) => (
+            <SourceCard
+              key={doc.id}
+              document={doc}
+              sessionId={sessionId}
+              onDelete={handleDeleteDocument}
+            />
+          ))
+        )}
+      </div>
+    </div>
   );
 }

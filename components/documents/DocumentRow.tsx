@@ -41,7 +41,7 @@ export default function DocumentRow({ document, sessionId, onDelete }: Props) {
   const sizeKb = Math.round(document.sizeBytes / 1024);
 
   return (
-    <div className="flex items-center justify-between p-2.5 bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-750 transition-colors group">
+    <div className="flex items-center justify-between p-2.5 glass-card rounded-xl float-hover group">
       <div className="flex-1 min-w-0 mr-2">
         <p
           className="text-xs font-medium text-slate-200 truncate"
@@ -49,14 +49,14 @@ export default function DocumentRow({ document, sessionId, onDelete }: Props) {
         >
           {document.filename}
         </p>
-        <p className="text-xs text-slate-500 mt-0.5">
+        <p className="text-xs text-slate-500 mt-0.5 font-light">
           {uploadedAt} · {document.chunkCount} chunks · {sizeKb} KB
         </p>
       </div>
       <button
         onClick={handleDelete}
         disabled={isDeleting}
-        className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded text-slate-500 hover:text-red-400 hover:bg-slate-700 disabled:opacity-40 transition-colors"
+        className="btn-ghost flex-shrink-0 w-7 h-7 rounded-lg hover:text-red-400 disabled:opacity-40"
         title="Delete document"
       >
         {isDeleting ? (

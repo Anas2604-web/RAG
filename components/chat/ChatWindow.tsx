@@ -27,12 +27,19 @@ export default function ChatWindow({ sessionId, onTitleChange }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { selectedDocIds } = useDocumentSelection();
+  const {
+    selectedDocIds,
+    setActiveCitations,
+    setLatestAnswer,
+    setSelectedCitation,
+  } = useDocumentSelection();
 
-  // Load session history whenever sessionId changes
   useEffect(() => {
     if (!sessionId) return;
     setMessages([]);
+    setActiveCitations([]);
+    setLatestAnswer("");
+    setSelectedCitation(null);
     setLoadingHistory(true);
 
     fetch(`/api/sessions/${sessionId}`)
@@ -57,6 +64,14 @@ export default function ChatWindow({ sessionId, onTitleChange }: Props) {
             })
           );
           setMessages(loaded);
+
+          const lastAssistant = [...loaded].reverse().find((m) => m.role === "assistant");
+          if (lastAssistant) {
+            setLatestAnswer(lastAssistant.content);
+            if (lastAssistant.citations?.length) {
+              setActiveCitations(lastAssistant.citations);
+            }
+          }
         }
         if (data.title && onTitleChange) onTitleChange(data.title);
       })
@@ -88,7 +103,6 @@ export default function ChatWindow({ sessionId, onTitleChange }: Props) {
     setIsLoading(true);
 
     try {
-      console.log("Sending request with documentIds:", selectedDocIds);
       const response = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -113,11 +127,12 @@ export default function ChatWindow({ sessionId, onTitleChange }: Props) {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+      setActiveCitations(data.citations ?? []);
+      setLatestAnswer(data.answer ?? "");
+      setSelectedCitation(data.citations?.[0] ?? null);
 
-      // Reflect auto-title update in the sidebar
       if (messages.length === 0 && onTitleChange) {
-        const title =
-          query.length > 50 ? query.slice(0, 50) + "…" : query;
+        const title = query.length > 50 ? query.slice(0, 50) + "…" : query;
         onTitleChange(title);
       }
     } catch (error) {
@@ -136,28 +151,31 @@ export default function ChatWindow({ sessionId, onTitleChange }: Props) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-slate-950 overflow-hidden">
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+    <div className="flex flex-col h-full overflow-hidden bg-white">
+      <div className="panel-header flex-shrink-0">
+        <h2 className="panel-title">Conversation</h2>
+        <p className="panel-subtitle">
+          {selectedDocIds.length > 0
+            ? `Querying ${selectedDocIds.length} source${selectedDocIds.length !== 1 ? "s" : ""}`
+            : "Select sources to begin"}
+        </p>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 min-h-0">
         {loadingHistory ? (
-          <div className="flex justify-center items-center h-full text-slate-500 text-sm">
-            Loading history…
+          <div className="flex justify-center items-center h-full text-slate-400 text-sm">
+            Loading…
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center">
-            <div className="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center mb-4">
-              <svg className="w-6 h-6 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-            </div>
-            <p className="text-slate-400 font-medium">Start a conversation</p>
-            <p className="text-slate-600 text-sm mt-1">
-              Upload documents and select them to ask questions
+          <div className="flex flex-col items-center justify-center h-full text-center px-6">
+            <p className="text-sm font-medium text-slate-600">Ask about your sources</p>
+            <p className="text-xs text-slate-400 mt-1 max-w-xs">
+              Select documents on the left, then ask questions here. Citations will appear on the right.
             </p>
           </div>
         ) : (
           messages.map((message) => (
-            <div key={message.id}>
+            <div key={message.id} className="animate-fade-in">
               <MessageBubble
                 role={message.role}
                 content={message.content}
@@ -173,11 +191,11 @@ export default function ChatWindow({ sessionId, onTitleChange }: Props) {
 
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-slate-800 text-slate-200 px-4 py-3 rounded-lg rounded-bl-none">
-              <div className="flex space-x-1.5">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-100" />
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-bounce delay-200" />
+            <div className="bubble-assistant px-4 py-3 rounded-lg">
+              <div className="flex space-x-1">
+                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" />
+                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce delay-100" />
+                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce delay-200" />
               </div>
             </div>
           </div>
@@ -186,8 +204,7 @@ export default function ChatWindow({ sessionId, onTitleChange }: Props) {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <div className="p-4 border-t border-slate-800 flex-shrink-0">
+      <div className="p-3 border-t border-slate-200 flex-shrink-0 bg-slate-50">
         <div className="flex gap-2">
           <input
             type="text"
@@ -196,18 +213,18 @@ export default function ChatWindow({ sessionId, onTitleChange }: Props) {
             onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSendMessage()}
             placeholder={
               selectedDocIds.length > 0
-                ? `Ask from ${selectedDocIds.length} selected source${selectedDocIds.length !== 1 ? "s" : ""}…`
-                : "Select documents first, then ask a question…"
+                ? "Ask a question about your sources…"
+                : "Select sources first…"
             }
-            disabled={isLoading}
-            className="flex-1 px-4 py-3 bg-slate-900 border border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 text-slate-200 placeholder-slate-500 text-sm"
+            disabled={isLoading || selectedDocIds.length === 0}
+            className="input-field flex-1 text-sm"
           />
           <button
             onClick={handleSendMessage}
-            disabled={isLoading || !input.trim()}
-            className="px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 transition-colors font-medium text-sm"
+            disabled={isLoading || !input.trim() || selectedDocIds.length === 0}
+            className="btn-primary px-4 py-2 text-sm flex-shrink-0"
           >
-            Send
+            Ask
           </button>
         </div>
       </div>

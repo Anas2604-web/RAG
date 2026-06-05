@@ -1,7 +1,7 @@
 'use client';
 
 import { Citation } from '@/types/index';
-import CitationCard from './CitationCard';
+import { useDocumentSelection } from '@/components/documents/DocumentSelectionProvider';
 
 interface MessageBubbleProps {
   role: 'user' | 'assistant';
@@ -17,40 +17,43 @@ export default function MessageBubble({
   citations = [],
 }: MessageBubbleProps) {
   const isUser = role === 'user';
+  const { setActiveCitations, setSelectedCitation, setLatestAnswer } =
+    useDocumentSelection();
+
+  const handleCitationClick = (citation: Citation) => {
+    setActiveCitations(citations);
+    setSelectedCitation(citation);
+    setLatestAnswer(content);
+  };
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`max-w-[85%] lg:max-w-[75%] px-4 py-3 rounded-lg ${
-          isUser
-            ? 'bg-blue-600 text-white rounded-br-none'
-            : 'bg-slate-800 text-slate-100 rounded-bl-none'
+        className={`max-w-[90%] px-4 py-3 rounded-lg ${
+          isUser ? 'bubble-user' : 'bubble-assistant'
         }`}
       >
-        <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">{content}</p>
-        <p className={`text-xs mt-2 ${isUser ? 'text-blue-200' : 'text-slate-400'}`}>
-          {timestamp.toLocaleTimeString()}
+        <p className={`prose-chat whitespace-pre-wrap break-words ${isUser ? 'text-white' : ''}`}>
+          {content}
         </p>
 
         {!isUser && citations.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-slate-700">
-            <p className="text-xs font-semibold mb-2 text-slate-300">Sources:</p>
-            <div className="space-y-2">
-              {citations.map((citation) => (
-                <CitationCard key={citation.chunkId} citation={citation} />
-              ))}
-            </div>
+          <div className="mt-2.5 flex flex-wrap gap-1.5">
+            {citations.map((citation, i) => (
+              <button
+                key={citation.chunkId}
+                onClick={() => handleCitationClick(citation)}
+                className="citation-chip"
+              >
+                [{i + 1}] {citation.filename.split('.')[0].slice(0, 16)}
+              </button>
+            ))}
           </div>
         )}
 
-        {!isUser && (
-          <button
-            onClick={() => navigator.clipboard.writeText(content)}
-            className="mt-2 text-xs px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded transition-colors"
-          >
-            Copy
-          </button>
-        )}
+        <p className={`text-[0.625rem] mt-2 ${isUser ? 'text-blue-100' : 'text-slate-400'}`}>
+          {timestamp.toLocaleTimeString()}
+        </p>
       </div>
     </div>
   );
