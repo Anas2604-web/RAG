@@ -34,5 +34,14 @@
     "chunkCount": 30,
     "collection": "agentic_rag",
     "sizeBytes": 275646
+  },
+  {
+    "id": "146dc883-1f28-4cca-b338-063083f22804",
+    "filename": "doc1.txt",
+    "mimeType": "text/plain",
+    "uploadedAt": "2026-06-05T16:35:31.511Z",
+    "chunkCount": 12,
+    "collection": "agentic_rag",
+    "sizeBytes": 5158
   }
 ]
