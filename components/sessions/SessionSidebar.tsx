@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useSession } from "next-auth/react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useSession, signOut } from "next-auth/react";
 
 export interface SessionMeta {
   _id: string;
@@ -27,18 +27,7 @@ export default function SessionSidebar({
   const [renameValue, setRenameValue] = useState("");
   const renameInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    fetchSessions();
-  }, []);
-
-  useEffect(() => {
-    if (renamingId && renameInputRef.current) {
-      renameInputRef.current.focus();
-      renameInputRef.current.select();
-    }
-  }, [renamingId]);
-
-  const fetchSessions = async () => {
+  const fetchSessions = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch("/api/sessions");
@@ -49,7 +38,19 @@ export default function SessionSidebar({
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchSessions();
+  }, [fetchSessions]);
+
+  useEffect(() => {
+    if (renamingId && renameInputRef.current) {
+      renameInputRef.current.focus();
+      renameInputRef.current.select();
+    }
+  }, [renamingId]);
 
   const handleNewSession = async () => {
     const res = await fetch("/api/sessions", {
@@ -223,15 +224,15 @@ export default function SessionSidebar({
 
       {/* Sign out */}
       <div className="p-3 border-t border-slate-800">
-        <a
-          href="/api/auth/signout"
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
           className="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors text-sm w-full"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
           Sign out
-        </a>
+        </button>
       </div>
     </aside>
   );

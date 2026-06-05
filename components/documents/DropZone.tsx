@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useImperativeHandle, forwardRef } from 'react';
 
 interface DropZoneProps {
   onFileSelect: (file: File) => void;
@@ -8,12 +8,25 @@ interface DropZoneProps {
   onError?: (message: string, suggestions: string[]) => void;
 }
 
-export default function DropZone({ onFileSelect, isLoading = false, onError }: DropZoneProps) {
+export interface DropZoneHandle {
+  reset: () => void;
+}
+
+const DropZone = forwardRef<DropZoneHandle, DropZoneProps>(
+  ({ onFileSelect, isLoading = false, onError }, ref) => {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+  // Expose reset() to parent
+  useImperativeHandle(ref, () => ({
+    reset() {
+      setSelectedFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    },
+  }));
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -60,7 +73,6 @@ export default function DropZone({ onFileSelect, isLoading = false, onError }: D
     error?: string;
     suggestions?: string[];
   } => {
-    // Check file type
     const validTypes = ['.pdf', '.txt', '.md', '.docx'];
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
     
@@ -75,7 +87,6 @@ export default function DropZone({ onFileSelect, isLoading = false, onError }: D
       };
     }
 
-    // Check file size
     if (file.size > MAX_FILE_SIZE) {
       const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
       const maxSizeMB = (MAX_FILE_SIZE / (1024 * 1024)).toFixed(2);
@@ -90,7 +101,6 @@ export default function DropZone({ onFileSelect, isLoading = false, onError }: D
       };
     }
 
-    // Check if file is empty
     if (file.size === 0) {
       return {
         valid: false,
@@ -103,10 +113,6 @@ export default function DropZone({ onFileSelect, isLoading = false, onError }: D
     }
 
     return { valid: true };
-  };
-
-  const isValidFile = (file: File): boolean => {
-    return validateFile(file).valid;
   };
 
   return (
@@ -148,4 +154,8 @@ export default function DropZone({ onFileSelect, isLoading = false, onError }: D
       </div>
     </div>
   );
-}
+});
+
+DropZone.displayName = 'DropZone';
+
+export default DropZone;

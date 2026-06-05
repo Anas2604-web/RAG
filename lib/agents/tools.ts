@@ -5,9 +5,9 @@ import { createLLM } from "@/lib/llm/llm-factory";
 import { config } from "@/lib/config/env";
 
 // Module-level filter — set per-request before agent runs
-let activeDocumentFilter: any = null;
+let activeDocumentFilter: Record<string, unknown> | null = null;
 
-export function setActiveDocumentFilter(filter: any) {
+export function setActiveDocumentFilter(filter: Record<string, unknown>) {
   activeDocumentFilter = filter;
 }
 
@@ -92,7 +92,7 @@ export const metadataFilterRetrieverTool = tool(
     const query = String(input.query ?? "").trim();
 
     // Layer a filename filter on top of the active document filter
-    let filter: any = activeDocumentFilter;
+    let filter: Record<string, unknown> | null = activeDocumentFilter;
 
     if (input.filename) {
       const filenameCondition = { key: "filename", match: { value: input.filename } };

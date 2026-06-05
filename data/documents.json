@@ -25,5 +25,14 @@
     "chunkCount": 30,
     "collection": "agentic_rag",
     "sizeBytes": 275646
+  },
+  {
+    "id": "36951c6a-cbf9-4210-8baa-4db000395409",
+    "filename": "8-sem-syllabus.pdf.pdf",
+    "mimeType": "application/pdf",
+    "uploadedAt": "2026-06-05T15:45:32.854Z",
+    "chunkCount": 30,
+    "collection": "agentic_rag",
+    "sizeBytes": 275646
   }
 ]

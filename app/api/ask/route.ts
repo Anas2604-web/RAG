@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     await chatSession.save();
 
     // ── Guards ───────────────────────────────────────────────────────────────
-    const sessionDocumentIds = chatSession.documents.map((doc: any) => doc.documentId);
+    const sessionDocumentIds = chatSession.documents.map((doc: { documentId: string }) => doc.documentId);
     if (sessionDocumentIds.length === 0) {
       const answer = "Please upload documents to this session before asking questions.";
       chatSession.messages.push({ role: "assistant", content: answer, citations: [], trace: [], createdAt: new Date() } as never);
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
     // ── Agent or fallback ────────────────────────────────────────────────────
     let answer = "";
     let citations: Citation[] = [];
-    let trace: any[] = [];
+    let trace: { thought: string; action: string; input: string; observation: string }[] = [];
 
     const agent = await createAgent();
 
@@ -80,10 +80,11 @@ export async function POST(req: NextRequest) {
           result = await agent.invoke({
             messages: [{ role: "user", content: query }],
           });
-        } catch (agentErr: any) {
+        } catch (agentErr: unknown) {
           // Agent hit recursion limit or Groq rate limit — return graceful fallback
-          console.error("⚠️ Agent error:", agentErr?.message);
-          const isRecursion = agentErr?.message?.includes("recursion") || agentErr?.message?.includes("maximum");
+          const msg = agentErr instanceof Error ? agentErr.message : String(agentErr);
+          console.error("⚠️ Agent error:", msg);
+          const isRecursion = msg.includes("recursion") || msg.includes("maximum");
           answer = isRecursion
             ? "I couldn't find a complete answer within the reasoning limit. Please try asking a more specific question about the documents."
             : "I encountered an issue while processing your question. Please try again.";
@@ -102,7 +103,7 @@ export async function POST(req: NextRequest) {
           : JSON.stringify(lastMessage?.content ?? "");
 
         // Build trace
-        trace = (result.messages ?? []).slice(0, -1).map((m: any, i: number) => ({
+        trace = (result.messages ?? []).slice(0, -1).map((m: { _getType?: () => string; role?: string; content?: unknown; tool_calls?: unknown }, i: number) => ({
           thought: `Step ${i + 1}`,
           action: m._getType?.() === "tool" ? "tool_call" : m.role ?? m._getType?.() ?? "thinking",
           input: typeof m.content === "string"

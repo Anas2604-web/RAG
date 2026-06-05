@@ -7,13 +7,14 @@ async function parsePDF(buffer: Buffer): Promise<string> {
   return new Promise((resolve, reject) => {
     const pdfParser = new PDFParser();
 
-    pdfParser.on("pdfParser_dataError", (errData: any) => {
-      reject(new Error(errData.parserError));
+    pdfParser.on("pdfParser_dataError", (errData: Error | { parserError: Error }) => {
+      const msg = errData instanceof Error ? errData.message : errData.parserError.message;
+      reject(new Error(msg));
     });
 
     pdfParser.on("pdfParser_dataReady", () => {
       try {
-        const rawText = (pdfParser as any).getRawTextContent();
+        const rawText = (pdfParser as unknown as { getRawTextContent: () => string }).getRawTextContent();
         
         // Log what we got
         logger.debug({
@@ -24,7 +25,7 @@ async function parsePDF(buffer: Buffer): Promise<string> {
         
         // If getRawTextContent returns empty, try getting text from pages
         if (!rawText || rawText.trim().length === 0) {
-          const pdfData = (pdfParser as any).data;
+          const pdfData = (pdfParser as unknown as { data: { Pages?: { Texts?: { R?: { T?: string }[] }[] }[] } }).data;
           if (pdfData && pdfData.Pages) {
             const texts: string[] = [];
             for (const page of pdfData.Pages) {

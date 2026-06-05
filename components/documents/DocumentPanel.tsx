@@ -4,9 +4,10 @@ import {
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from "react";
 import { DocumentMetaData } from "@/types/index";
-import DropZone from "./DropZone";
+import DropZone, { DropZoneHandle } from "./DropZone";
 import DocumentRow from "./DocumentRow";
 import { useDocumentSelection } from "./DocumentSelectionProvider";
 
@@ -20,6 +21,8 @@ export default function DocumentPanel({ sessionId }: Props) {
   const [documents, setDocuments] = useState<DocumentMetaData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  // 'uploading' = transferring bytes, 'processing' = server ingesting, idle otherwise
+  const [uploadStage, setUploadStage] = useState<'idle' | 'uploading' | 'processing'>('idle');
   const [error, setError] = useState<{
     message: string;
     suggestions?: string[];
@@ -27,6 +30,7 @@ export default function DocumentPanel({ sessionId }: Props) {
   } | null>(null);
   const { selectedDocIds, setSelectedDocIds } = useDocumentSelection();
   const [showDropdown, setShowDropdown] = useState(false);
+  const dropZoneRef = useRef<DropZoneHandle>(null);
 
   const fetchDocuments = useCallback(async () => {
     try {
@@ -39,7 +43,9 @@ export default function DocumentPanel({ sessionId }: Props) {
 
   // Reload documents when session changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDocuments([]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedDocIds([]);
     fetchDocuments();
   }, [fetchDocuments]);
@@ -48,6 +54,7 @@ export default function DocumentPanel({ sessionId }: Props) {
     setIsLoading(true);
     setError(null);
     setUploadProgress(0);
+    setUploadStage('uploading');
 
     const formData = new FormData();
     formData.append("file", file);
@@ -58,16 +65,34 @@ export default function DocumentPanel({ sessionId }: Props) {
 
       xhr.upload.addEventListener("progress", (e) => {
         if (e.lengthComputable) {
-          setUploadProgress((e.loaded / e.total) * 100);
+          // Cap at 90% — the remaining 10% is server-side processing
+          const transferPct = (e.loaded / e.total) * 90;
+          setUploadProgress(transferPct);
         }
+      });
+
+      xhr.upload.addEventListener("load", () => {
+        // Bytes fully sent; server is now parsing + embedding
+        setUploadProgress(90);
+        setUploadStage('processing');
       });
 
       xhr.addEventListener("load", async () => {
         if (xhr.status === 200) {
+          setUploadProgress(100);
           await fetchDocuments();
-          setUploadProgress(0);
+          // Reset everything after a brief moment so user sees 100%
+          setTimeout(() => {
+            setUploadProgress(0);
+            setUploadStage('idle');
+            setIsLoading(false);
+            dropZoneRef.current?.reset();
+          }, 600);
           setError(null);
         } else {
+          setUploadStage('idle');
+          setUploadProgress(0);
+          setIsLoading(false);
           try {
             const errData = JSON.parse(xhr.responseText);
             setError({
@@ -82,10 +107,12 @@ export default function DocumentPanel({ sessionId }: Props) {
             });
           }
         }
-        setIsLoading(false);
       });
 
       xhr.addEventListener("error", () => {
+        setUploadStage('idle');
+        setUploadProgress(0);
+        setIsLoading(false);
         setError({
           message: "Network error occurred during upload",
           suggestions: [
@@ -93,17 +120,18 @@ export default function DocumentPanel({ sessionId }: Props) {
             "Try uploading again",
           ],
         });
-        setIsLoading(false);
       });
 
       xhr.open("POST", "/api/upload");
       xhr.send(formData);
     } catch (err) {
+      setUploadStage('idle');
+      setUploadProgress(0);
+      setIsLoading(false);
       setError({
         message: err instanceof Error ? err.message : "Unknown error",
         suggestions: ["Please try again"],
       });
-      setIsLoading(false);
     }
   };
 
@@ -228,6 +256,7 @@ export default function DocumentPanel({ sessionId }: Props) {
           )}
 
           <DropZone
+            ref={dropZoneRef}
             onFileSelect={handleFileSelect}
             isLoading={isLoading}
             onError={(message, suggestions) => {
@@ -235,15 +264,26 @@ export default function DocumentPanel({ sessionId }: Props) {
             }}
           />
 
-          {isLoading && uploadProgress > 0 && (
+          {isLoading && (
             <div className="mt-3">
+              <div className="flex justify-between items-center mb-1">
+                <span className="text-xs text-slate-400">
+                  {uploadStage === 'processing'
+                    ? 'Processing document…'
+                    : 'Uploading…'}
+                </span>
+                <span className="text-xs text-slate-500">
+                  {uploadProgress < 100 ? `${Math.round(uploadProgress)}%` : 'Done'}
+                </span>
+              </div>
               <div className="w-full bg-slate-700 rounded-full h-1.5">
                 <div
-                  className="bg-blue-500 h-1.5 rounded-full transition-all"
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    uploadStage === 'processing' ? 'bg-yellow-500 animate-pulse' : 'bg-blue-500'
+                  }`}
                   style={{ width: `${uploadProgress}%` }}
                 />
               </div>
-              <p className="text-xs text-slate-500 mt-1">{Math.round(uploadProgress)}%</p>
             </div>
           )}
 
