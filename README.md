@@ -4,6 +4,10 @@ An agentic Retrieval-Augmented Generation (RAG) system built on **Next.js 16**, 
 
 Upload documents, ask questions, and get grounded answers with citations — powered entirely by open-source models.
 
+## Live demo
+
+Try the app live here: [AgenticRAG Live](https://agentic-rag-two.vercel.app/)
+
 ---
 
 ## What it does
